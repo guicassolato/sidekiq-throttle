@@ -19,7 +19,7 @@ module Sidekiq
     protected
 
     DEFAULT_THROTTLE_OPTIONS = {
-      number_of_slots: 1,
+      concurrency: 1,
       duration: 30.seconds,
       fallback_method: :perform_async
     }

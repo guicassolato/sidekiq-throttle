@@ -29,7 +29,7 @@ class MyWorker
   include Sidekiq::Worker
   include Sidekie::Throttle
 
-  sidekiq_options throttle: { number_of_slots: 3, duration: 30.seconds }
+  sidekiq_options throttle: { concurrency: 3, duration: 30.seconds }
 
   def perform(*args)
     throttle(:my_throttle, *args) do
@@ -41,7 +41,7 @@ end
 
 ### Throttle options
 
-`number_of_slots`: maximum number of workers running in parallel (default: 1).
+`concurrency`: maximum number of workers running in parallel (default: 1).
 
 `duration`: each slot is locked exclusively to one job for this given amount of time or until the job finishes, whichever lasts longer (default: 30s).
 
@@ -52,7 +52,7 @@ end
 If not specified otherwise, the default options for your throttle are:
 
 ```ruby
-number_of_slots: 1                 # maximum 1 worker running at a time
+concurrency: 1                 # maximum 1 worker running at a time
 duration: 30.seconds               # slot is locked to your job for 30 seconds or until the job finishes, whichever lasts longer
 fallback_method: :perform_async    # in case a new a worker thread fails to acquire a slot of the throttle to perform, it is re-enqueued with the same parameters
 ```
@@ -62,7 +62,7 @@ fallback_method: :perform_async    # in case a new a worker thread fails to acqu
 You can also define options specifically for your throttle, in contraposition to options that apply to all throttles opened inside the same Sidekiq worker class:
 
 ```ruby
-sidekiq_options throttle: { my_throttle: { number_of_slots: 3, duration: 30.seconds } }
+sidekiq_options throttle: { my_throttle: { concurrency: 3, duration: 30.seconds } }
 ```
 
 ### Fallback function
@@ -82,7 +82,7 @@ class MyWorker
   include Sidekiq::Worker
   include Sidekie::Throttle
 
-  sidekiq_options throttle: { my_throttle: { number_of_slots: 3, duration: 30.seconds, fallback_method: :my_custom_fallback } }
+  sidekiq_options throttle: { my_throttle: { concurrency: 3, duration: 30.seconds, fallback_method: :my_custom_fallback } }
 
   def perform(*args)
     throttle(:my_throttle, *args) do
