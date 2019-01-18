@@ -1,6 +1,6 @@
 # Sidekiq::Throttle
 
-sidekiq-throttle allows to rate limit and control the execution of concurrent Sidekiq workers.
+sidekiq-throttle allows to rate limit and control the execution of concurrent [Sidekiq](https://github.com/mperham/sidekiq) workers.
 
 You can limit the number of slots available to be taken (acquired) by workers, like a lock, thus establishing the maximum number of jobs performing in parallel. You can also set a frequency (duration) for each slot to be held.
 
