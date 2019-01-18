@@ -30,7 +30,7 @@ module Sidekiq
       attr_reader :prefix, :options, :key
 
       def acquire!
-        (1..max_number_of_slots).to_a.shuffle.each do |attempt|
+        (1..concurrency).to_a.shuffle.each do |attempt|
           @key = "#{prefix}-#{attempt}"
           # FIXME: add a default expire (slot timeout), just in case the user never calls #release!
           return true if redis.setnx(key, timestamp)
@@ -101,8 +101,8 @@ module Sidekiq
         Time.now.to_i
       end
 
-      def max_number_of_slots
-        options.fetch(:number_of_slots, 1)
+      def concurrency
+        options.fetch(:concurrency, 1)
       end
 
       def expire_in(seconds)

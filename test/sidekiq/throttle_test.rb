@@ -19,31 +19,31 @@ class Sidekiq::ThrottleTest < ActiveSupport::TestCase
 
   test 'throttle options defaults' do
     options = @worker.send(:throttle_options)
-    assert_equal 1, options[:number_of_slots]
+    assert_equal 1, options[:concurrency]
     assert_equal 30, options[:duration]
     assert_equal :perform_async, options[:fallback_method]
   end
 
   test 'custom throttle options for any throttle' do
-    worker_klass.stubs(get_sidekiq_options: { 'throttle' => { 'number_of_slots' => 2, 'duration' => 30.seconds } } )
+    worker_klass.stubs(get_sidekiq_options: { 'throttle' => { 'concurrency' => 2, 'duration' => 30.seconds } } )
     options = @worker.send(:throttle_options)
-    assert_equal 2, options[:number_of_slots]
+    assert_equal 2, options[:concurrency]
     assert_equal 30, options[:duration]
     assert_equal :perform_async, options[:fallback_method]
   end
 
   test 'custom throttle options for a given throttle' do
-    all_throttles_options = { 'number_of_slots' => 10, 'fallback_method' => :custom_method }
-    my_throttle_options = { 'number_of_slots' => 2, duration: 1.minute }
+    all_throttles_options = { 'concurrency' => 10, 'fallback_method' => :custom_method }
+    my_throttle_options = { 'concurrency' => 2, duration: 1.minute }
     worker_klass.stubs(get_sidekiq_options: { 'throttle' => { 'my-throttle' => my_throttle_options }.merge(all_throttles_options) } )
 
     options = @worker.send(:throttle_options_for, 'my-throttle')
-    assert_equal 2, options[:number_of_slots]
+    assert_equal 2, options[:concurrency]
     assert_equal 1.minute, options[:duration]
     assert_equal :custom_method, options[:fallback_method]
 
     options = @worker.send(:throttle_options_for, 'other-throttle')
-    assert_equal 10, options[:number_of_slots]
+    assert_equal 10, options[:concurrency]
     assert_equal 30.seconds, options[:duration] # default
     assert_equal :custom_method, options[:fallback_method]
   end
@@ -101,7 +101,7 @@ class Sidekiq::ThrottleTest < ActiveSupport::TestCase
   end
 
   test 'ensures limited number of slots are taken' do
-    worker_klass.stubs(get_sidekiq_options: { 'throttle' => { 'number_of_slots' => 2, 'duration' => 30.seconds } } )
+    worker_klass.stubs(get_sidekiq_options: { 'throttle' => { 'concurrency' => 2, 'duration' => 30.seconds } } )
     worker_klass.prepend(PerformWithFiber)
 
     Slot.any_instance.stubs(:release!).twice.returns(false)

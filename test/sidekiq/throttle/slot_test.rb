@@ -4,7 +4,7 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
   Slot = Sidekiq::Throttle::Slot
 
   def setup
-    options = { number_of_slots: 1, duration: 30.seconds }
+    options = { concurrency: 1, duration: 30.seconds }
     @slot = Slot.new('my-prefix', options)
   end
 
@@ -13,7 +13,7 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
   end
 
   test 'it has options' do
-    options = { number_of_slots: 1, duration: 30.seconds }
+    options = { concurrency: 1, duration: 30.seconds }
     assert_equal options, @slot.options
   end
 
@@ -34,7 +34,7 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
 
   test 'multiple slots' do
     Timecop.freeze do
-      options = { number_of_slots: 3, duration: 30.seconds }
+      options = { concurrency: 3, duration: 30.seconds }
       assert Slot.acquire('multiple', options)
       assert Slot.acquire('multiple', options)
       assert Slot.acquire('multiple', options)
@@ -44,7 +44,7 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
 
   test 'out of slots with multiple slots' do
     Timecop.freeze do
-      options = { number_of_slots: 3 }
+      options = { concurrency: 3 }
       assert Slot.acquire('multiple', options)
       assert Slot.acquire('multiple', options)
       assert Slot.acquire('multiple', options)
@@ -56,8 +56,8 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
 
   test 'same slot is not taken more than once' do
     Timecop.freeze do
-      slot1 = Slot.new('my-throttle', number_of_slots: 2)
-      slot2 = Slot.new('my-throttle', number_of_slots: 2)
+      slot1 = Slot.new('my-throttle', concurrency: 2)
+      slot2 = Slot.new('my-throttle', concurrency: 2)
       slot1.acquire!
       3.times do
         slot2.acquire!
@@ -69,7 +69,7 @@ class Sidekiq::Throttle::SlotTest < ActiveSupport::TestCase
 
   test 'scoped by prefix' do
     Timecop.freeze do
-      options = { number_of_slots: 2 }
+      options = { concurrency: 2 }
       assert Slot.acquire('multiple-1', options)
       assert Slot.acquire('multiple-1', options)
       refute Slot.acquire('multiple-1', options)
